@@ -11,7 +11,10 @@ count = 0
 
 with open("payments.jsonl") as f:
     for line in f:
-        event = json.loads(line)
+        try:
+            event = json.loads(line)
+        except ValueError:
+            continue  # unreadable line
         if event["status"] == "success":
             total += float(str(event["amount"]).replace(",", ""))
             count += 1
