@@ -13,7 +13,7 @@ with open("payments.jsonl") as f:
     for line in f:
         event = json.loads(line)
         if event["status"] == "success":
-            total += float(event["amount"])
+            total += float(str(event["amount"]).replace(",", ""))
             count += 1
 
 with open("expected.txt") as f:
