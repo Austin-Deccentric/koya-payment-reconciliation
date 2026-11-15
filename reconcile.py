@@ -8,6 +8,7 @@ import json
 
 total = 0.0
 count = 0
+latest = {}  # txn_id -> latest attempt
 
 with open("payments.jsonl") as f:
     for line in f:
@@ -17,9 +18,14 @@ with open("payments.jsonl") as f:
             continue  # unreadable line
         if not isinstance(event, dict) or not event.get("txn_id"):
             continue  # no txn_id
-        if event["status"] == "success":
-            total += float(str(event["amount"]).replace(",", ""))
-            count += 1
+        # ts is fixed-width UTC ISO, so string order is time order; on a tie the later line wins
+        if event["txn_id"] not in latest or event["ts"] >= latest[event["txn_id"]]["ts"]:
+            latest[event["txn_id"]] = event
+
+for event in latest.values():
+    if event["status"] == "success":
+        total += float(str(event["amount"]).replace(",", ""))
+        count += 1
 
 with open("expected.txt") as f:
     expected = int(f.read().strip())
